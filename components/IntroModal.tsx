@@ -7,14 +7,16 @@ import {
   Sparkles,
   FileText,
   Send,
-  Loader2,
   CheckCircle2,
   CalendarCheck,
   Mail,
   Phone,
   BadgeCheck,
+  Bell,
+  ChevronRight,
 } from "lucide-react";
 import type { IntroResponse, MatchResult } from "@/lib/types";
+import { acceptNote } from "@/lib/responses";
 import { Modal } from "./ui/Modal";
 import { initials } from "./ui/cn";
 
@@ -24,41 +26,83 @@ interface IntroModalProps {
   match: MatchResult | null;
   loading: boolean;
   intro: IntroResponse | null;
+  /** Stage to open at — "draft" for a fresh intro, later stages when resuming a
+   *  sent request from the Sent tab (e.g. "connected" jumps straight to booking). */
+  initialStage?: Stage;
+  /** Whether the call was already booked (when resuming a booked request). */
+  initialBooked?: boolean;
+  /** Fired when the user sends the request — records it in the "Sent requests" tab. */
+  onSent?: (match: MatchResult, intro: IntroResponse) => void;
+  /** Fired when the flow reaches "connected" — flips that sent request's status. */
+  onConnected?: (personaId: string) => void;
+  /** Fired when the call is booked — marks the sent request booked. */
+  onBooked?: (personaId: string) => void;
 }
 
 /** Shows the drafted intro, then the request → accepted → connected handoff. */
-export function IntroModal({ open, onClose, match, loading, intro }: IntroModalProps) {
+export function IntroModal({
+  open,
+  onClose,
+  match,
+  loading,
+  intro,
+  initialStage,
+  initialBooked,
+  onSent,
+  onConnected,
+  onBooked,
+}: IntroModalProps) {
   if (!match) return null;
   return (
     <Modal open={open} onClose={onClose} className="max-w-lg">
       {/* keyed so transient state resets each time a new intro opens */}
       <IntroBody
-        key={`${match.persona.id}:${intro?.message ?? "loading"}`}
+        key={`${match.persona.id}:${intro?.message ?? "loading"}:${initialStage ?? "draft"}`}
         match={match}
         loading={loading}
         intro={intro}
+        initialStage={initialStage}
+        initialBooked={initialBooked}
+        onSent={onSent}
+        onConnected={onConnected}
+        onBooked={onBooked}
+        onClose={onClose}
       />
     </Modal>
   );
 }
 
-type Stage = "draft" | "sent" | "vouched" | "connected";
+export type Stage = "draft" | "sent" | "vouched" | "connected";
 
 function IntroBody({
   match,
   loading,
   intro,
+  initialStage,
+  initialBooked,
+  onSent,
+  onConnected,
+  onBooked,
+  onClose,
 }: {
   match: MatchResult;
   loading: boolean;
   intro: IntroResponse | null;
+  initialStage?: Stage;
+  initialBooked?: boolean;
+  onSent?: (match: MatchResult, intro: IntroResponse) => void;
+  onConnected?: (personaId: string) => void;
+  onBooked?: (personaId: string) => void;
+  onClose?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const [stage, setStage] = useState<Stage>("draft");
-  const [booked, setBooked] = useState(false);
+  const [stage, setStage] = useState<Stage>(initialStage ?? "draft");
+  const [booked, setBooked] = useState(initialBooked ?? false);
 
   const mutual = match.mutual;
   const target = match.persona;
+  const targetFirst = target.name.split(" ")[0];
+  const mutualFirst = mutual?.name.split(" ")[0];
 
   async function copy() {
     if (!intro) return;
@@ -67,16 +111,32 @@ function IntroBody({
     setTimeout(() => setCopied(false), 2000);
   }
 
+  // The causal chain is real-world async: you request → the mutual vouches (whenever
+  // they get to it) → the target accepts. We don't fake it with timers — each later
+  // event arrives as a notification you open, so the wait stays honest and the demo
+  // stays in the presenter's hands.
+  const hasVouch = Boolean(match.endorsement && mutual);
+
   function send() {
     setStage("sent");
-    // Causal chain (faked for the demo): you request → the mutual is asked to
-    // vouch → they vouch → the target accepts with the vouch attached.
-    if (match.endorsement && mutual) {
-      setTimeout(() => setStage("vouched"), 1200);
-      setTimeout(() => setStage("connected"), 2800);
-    } else {
-      setTimeout(() => setStage("connected"), 1600);
-    }
+    if (intro) onSent?.(match, intro);
+  }
+
+  // Reaching "connected" = the target accepted → reflect it in the Sent tab.
+  function connect() {
+    setStage("connected");
+    onConnected?.(target.id);
+  }
+
+  function book() {
+    setBooked(true);
+    // Hold the "Call booked" beat, then step the modal aside and *only then* form
+    // the connection — so the network reveal (the node growing into your ring)
+    // plays on an unobstructed graph rather than hidden behind this popup.
+    setTimeout(() => {
+      onBooked?.(target.id);
+      onClose?.();
+    }, 1500);
   }
 
   return (
@@ -155,13 +215,30 @@ function IntroBody({
               )}
             </div>
 
-            {/* ── request sent: the mutual is asked to vouch ── */}
+            {/* ── request sent: honestly pending, the next event arrives as a
+                 notification you open (no fake timers, presenter-paced) ── */}
             {stage === "sent" && (
-              <PendingRow>
-                {mutual && match.endorsement
-                  ? `Request sent to ${target.name.split(" ")[0]} — asking ${mutual.name.split(" ")[0]} to vouch…`
-                  : `Request sent — waiting for ${target.name.split(" ")[0]} to accept…`}
-              </PendingRow>
+              <>
+                <PendingStatus
+                  title={`Request sent · ${targetFirst} was notified`}
+                  detail={
+                    hasVouch
+                      ? `Pinging ${mutualFirst} for a vouch too. People usually reply within a day — we’ll let you know here.`
+                      : `People usually reply within a day — we’ll let you know here.`
+                  }
+                />
+                {hasVouch ? (
+                  <NotificationCard
+                    title={`${mutualFirst} vouched for you`}
+                    onOpen={() => setStage("vouched")}
+                  />
+                ) : (
+                  <NotificationCard
+                    title={`${targetFirst} accepted your request`}
+                    onOpen={connect}
+                  />
+                )}
+              </>
             )}
 
             {/* ── the mutual's vouch — appears only AFTER you've requested ── */}
@@ -171,7 +248,7 @@ function IntroBody({
                 <div className="animate-rise mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] p-3.5">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
                     <BadgeCheck size={14} />
-                    {mutual.name.split(" ")[0]} vouched for you
+                    {mutualFirst} vouched for you
                     <span className="ml-auto rounded-full bg-emerald-400/15 px-2 py-0.5 text-[10px] tabular-nums text-emerald-200 ring-1 ring-emerald-400/25">
                       {match.endorsement.score}/10
                     </span>
@@ -184,16 +261,28 @@ function IntroBody({
                 </div>
               )}
 
-            {/* ── vouch attached, now waiting for the target ── */}
+            {/* ── vouch attached, now waiting on the target to accept ── */}
             {stage === "vouched" && (
-              <PendingRow>
-                Vouch attached — waiting for {target.name.split(" ")[0]} to accept…
-              </PendingRow>
+              <>
+                <PendingStatus
+                  title={`Vouch attached · waiting on ${targetFirst}`}
+                  detail={`Your request and ${mutualFirst}’s vouch are with ${targetFirst}. We’ll let you know here when they respond.`}
+                />
+                <NotificationCard
+                  title={`${targetFirst} accepted your request`}
+                  onOpen={connect}
+                />
+              </>
             )}
 
             {/* ── connected: handoff to a real conversation ── */}
             {stage === "connected" && (
-              <ConnectedHandoff target={target} booked={booked} onBook={() => setBooked(true)} />
+              <ConnectedHandoff
+                target={target}
+                booked={booked}
+                onBook={book}
+                note={acceptNote(target)}
+              />
             )}
           </>
         )}
@@ -206,10 +295,12 @@ function ConnectedHandoff({
   target,
   booked,
   onBook,
+  note,
 }: {
   target: MatchResult["persona"];
   booked: boolean;
   onBook: () => void;
+  note?: string;
 }) {
   const first = target.name.split(" ")[0];
   const email = mockEmail(target.name);
@@ -220,7 +311,12 @@ function ConnectedHandoff({
         <CheckCircle2 size={16} />
         {first} accepted your intro
       </div>
-      <p className="mt-1 text-xs text-slate-400">
+      {note && (
+        <p className="mt-1.5 text-[12.5px] italic leading-snug text-emerald-100/90">
+          “{note}”
+        </p>
+      )}
+      <p className="mt-1.5 text-xs text-slate-400">
         You&apos;re connected. Take it to a real conversation — Warmline hands off, it
         doesn&apos;t live in your inbox.
       </p>
@@ -269,12 +365,43 @@ function mockEmail(name: string): string {
   return `${first}${last ? "." + last : ""}@gmail.com`;
 }
 
-function PendingRow({ children }: { children: React.ReactNode }) {
+/** Calm, honest "we're waiting" state — no spinner (this can take hours, not seconds). */
+function PendingStatus({ title, detail }: { title: string; detail: string }) {
   return (
-    <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-slate-300">
-      <Loader2 size={16} className="animate-spin text-violet-300" />
-      <span>{children}</span>
+    <div className="animate-rise mt-4 flex items-start gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+      <span className="relative mt-1 flex h-2 w-2 shrink-0">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400/60" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-400" />
+      </span>
+      <div>
+        <p className="text-sm text-slate-300">{title}</p>
+        <p className="mt-0.5 text-[11px] leading-snug text-slate-500">{detail}</p>
+      </div>
     </div>
+  );
+}
+
+/** An incoming notification you tap to open — how the real async events would arrive. */
+function NotificationCard({ title, onOpen }: { title: string; onOpen: () => void }) {
+  return (
+    <button
+      onClick={onOpen}
+      className="animate-rise group mt-2.5 flex w-full items-center gap-3 rounded-xl border border-violet-400/25 bg-violet-400/[0.06] px-4 py-3 text-left transition hover:border-violet-400/45 hover:bg-violet-400/[0.1]"
+    >
+      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-400/15 text-violet-200 ring-1 ring-violet-400/25">
+        <Bell size={15} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-medium uppercase tracking-wide text-violet-300/80">
+          New notification
+        </p>
+        <p className="truncate text-sm font-medium text-slate-100">{title}</p>
+      </div>
+      <ChevronRight
+        size={16}
+        className="shrink-0 text-slate-500 transition group-hover:translate-x-0.5 group-hover:text-violet-200"
+      />
+    </button>
   );
 }
 

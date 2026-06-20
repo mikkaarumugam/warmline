@@ -115,6 +115,22 @@ body {
   to { stroke-dashoffset: -36; }
 }
 
+/* Activated-connection edge — a solid emerald line from "You" to someone you've
+   connected with. Distinct from the dashed warm *path*: this is a relationship
+   that now exists. Animates in so the network visibly "grows" on accept/book. */
+.connection-edge .react-flow__edge-path {
+  stroke: #34d399;
+  stroke-width: 3;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(52, 211, 153, 0.85))
+          drop-shadow(0 0 12px rgba(16, 185, 129, 0.5));
+  animation: conn-grow 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes conn-grow {
+  from { opacity: 0; stroke-width: 0; }
+  to { opacity: 1; stroke-width: 3; }
+}
+
 /* Custom thin scrollbar for result list */
 .thin-scroll::-webkit-scrollbar { width: 8px; }
 .thin-scroll::-webkit-scrollbar-thumb {
