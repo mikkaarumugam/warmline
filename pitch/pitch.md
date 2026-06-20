@@ -1,9 +1,12 @@
-# Pitch — Warm-Intro Autopilot
+# Pitch — Warmline
 
-> Working name: **[PICK ONE: Warmly / Vouch / Raised / Conduit / Warmline]**
+> Working name: **Warmline** — the warm-intro marketplace. (Backups: Vouch, Conduit.)
 > Target bounty: **Solvimon — "most likely to be a successful business."**
 > Format: 3-minute stage pitch + live demo. Judging: creativity, technical skill,
 > usability, startup potential.
+>
+> **One-liner:** A two-sided, declared marketplace for warm introductions — post an
+> ask, and we route it through the mutual friend who can actually make the intro.
 
 ---
 
@@ -53,6 +56,26 @@ then write the intro for them. Two-sided and opt-in, not LinkedIn scraping."*
    screen — answers "where does the graph come from?"
 5. **Business** (20s): who pays (recruiters, founders, BD); the declared graph compounds.
 6. **Where it goes** (10s): mobile + push ("someone in your network can help with your ask").
+
+## Live-demo script (the seed graph is populated — ~94 people, 12 communities)
+
+Hero ask (THE one — rehearse this): type
+> **"a technical cofounder who knows payments infrastructure"**
+→ **Samuel Okoro** (payments infra, ex-Adyen) ranks #1 **via Priya Nair** (2nd degree).
+The point to land: *zero shared keywords with "billing and ledger systems at Adyen" —
+this is semantic, and it's routed through the friend who can introduce you.*
+
+Backup asks (all return clean, on-stage-safe results on the seed graph):
+- **"an intro to someone hiring in healthtech"** → **Priyanka Menon** #1 (healthtech talent
+  lead) via **Dana Levin**; Dana and two more healthtech people follow.
+- **"a designer who has worked on money flows"** → **Marco Bianchi** #1 (money-flows / billing
+  UX) via **Priya Nair**; **Inès Laurent** #2 (money-movement flows) via Priya.
+- **"a B2B growth marketer who can build pipeline"** → **Marcus Reed** #1 (direct, 1st degree),
+  **Camila Torres** #2 (demand-gen) via Marcus.
+
+Then click the top result → the React Flow path animates You → mutual → target → hit
+**"Draft intro"** → Claude writes the double-opt-in note in the *mutual's* voice. (No API key
+on stage? It falls back to a clean templated draft — the demo never hard-fails.)
 
 ## Likely judge Qs (have answers ready)
 - *Isn't this just LinkedIn?* No — LinkedIn is inferred and one-sided. Here both sides declare

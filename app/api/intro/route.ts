@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { getGraph } from "@/lib/data";
 import { templateIntro } from "@/lib/intro/draft";
-import type { IntroRequest } from "@/lib/types";
+import { claudeIntro } from "@/lib/intro/claude";
+import type { IntroRequest, IntroResponse } from "@/lib/types";
 
 // POST /api/intro  body: IntroRequest → IntroResponse
-// Spine uses the template fallback. Track C adds the Claude-powered path here
-// (use Claude when ANTHROPIC_API_KEY is set, else fall back to templateIntro).
+// Uses Claude (Anthropic SDK, claude-sonnet-4-6) to draft the intro in the
+// mutual's voice when ANTHROPIC_API_KEY is set. On ANY error — or when the key
+// is missing — it falls back to the deterministic templateIntro and returns
+// generatedBy: "template". This endpoint must never hard-fail.
 export async function POST(req: Request) {
   let body: IntroRequest;
   try {
@@ -22,7 +25,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unknown persona" }, { status: 404 });
   }
   const mutual = body.mutualId ? byId.get(body.mutualId) : undefined;
+  const ask = body.ask ?? target.ask;
 
-  const intro = templateIntro({ me, target, mutual, ask: body.ask ?? target.ask });
+  const args = { me, target, mutual, ask };
+
+  let intro: IntroResponse;
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      intro = await claudeIntro(args);
+    } catch {
+      // Claude path failed (network, rate limit, bad key, empty draft, …) —
+      // never let the endpoint hard-fail; serve the template instead.
+      intro = templateIntro(args);
+    }
+  } else {
+    intro = templateIntro(args);
+  }
+
   return NextResponse.json(intro);
 }
