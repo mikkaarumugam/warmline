@@ -13,37 +13,39 @@ import type { Endorsement, VouchRequest } from "@/lib/types";
 // inferred, consistent with the rest of the product.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Vouches the mutual has declared for a target, keyed `${mutualId}|${targetId}`. */
+// The mutual vouches FOR YOU (the asker) to the target — backing the person
+// making the request, so the target knows it's worth their time. Keyed
+// `${mutualId}|${targetId}`. A signal that rides with your request, never a gate.
 export const ENDORSEMENTS: Record<string, Endorsement> = {
-  // Golden path — Priya backs Samuel.
+  // Golden path — Priya backs you to Samuel.
   "priya|samuel": {
     byId: "priya",
     score: 9,
-    note: "Sam built our ledger at Adyen — the best payments engineer I know. Snap him up before someone else does.",
+    note: "I've watched them build for a while now — sharp, moves fast, and genuinely serious about ops. Worth your time, Sam.",
   },
-  // "designer who has worked on money flows" — Priya backs Marco.
+  // Priya backs you to Marco.
   "priya|marco": {
     byId: "priya",
     score: 8,
-    note: "Marco redesigned our checkout end to end. Money-flows UX is genuinely his superpower.",
+    note: "They actually get the value of good design and they're great to work with. I'd happily put my name behind this one.",
   },
-  // fintech dashboards — Priya backs Raj.
+  // Priya backs you to Raj.
   "priya|raj": {
     byId: "priya",
     score: 7,
-    note: "Raj shipped our analytics dashboards fast and they just worked. Reliable hire.",
+    note: "Solid founder, clear about what they need. Happy to vouch for the intro.",
   },
-  // compliance — Noor backs Ethan.
+  // Noor backs you to Ethan.
   "noor|ethan": {
     byId: "noor",
     score: 8,
-    note: "Ethan ran compliance at one of our portfolio companies — razor sharp on KYC and licensing.",
+    note: "I've seen how they operate — diligent and serious about getting it right. Worth a conversation.",
   },
-  // healthtech hiring — Dana backs Priyanka.
+  // Dana backs you to Priyanka.
   "dana|priyanka": {
     byId: "dana",
     score: 9,
-    note: "Priyanka built our clinical hiring pipeline from scratch. If you're hiring in healthtech, talk to her.",
+    note: "They're building something real in ops and they're a genuinely good operator. Strongly recommend connecting.",
   },
 };
 

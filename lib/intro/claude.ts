@@ -2,9 +2,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { IntroResponse, Persona } from "@/lib/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// CLAUDE INTRO DRAFT — writes the warm intro in the MUTUAL contact's voice with
-// double-opt-in framing. Uses the Anthropic SDK (`new Anthropic()` reads
-// ANTHROPIC_API_KEY from env). Model: claude-sonnet-4-6.
+// CLAUDE INTRO DRAFT — writes a forwardable note in the ASKER's (your) own voice,
+// addressed to the target. For a 2nd-degree match it cites the shared mutual, who
+// can vouch (a signal, not a gate). Uses the Anthropic SDK (`new Anthropic()`
+// reads ANTHROPIC_API_KEY from env). Model: claude-sonnet-4-6.
 //
 // The API route (app/api/intro/route.ts) calls this only when ANTHROPIC_API_KEY
 // is set, and falls back to `templateIntro` on ANY error. This module therefore
@@ -12,53 +13,46 @@ import type { IntroResponse, Persona } from "@/lib/types";
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface DraftArgs {
-  me: Persona; // "You" — the asker
-  target: Persona; // the person to be introduced to
-  mutual?: Persona; // the connector (undefined for 1st-degree)
+  me: Persona; // "You" — the asker / author of the note
+  target: Persona; // the person you want to reach
+  mutual?: Persona; // the shared connection who can vouch (undefined for 1st-degree)
   ask: string;
 }
 
 const MODEL = "claude-sonnet-4-6";
 
 function buildPrompt({ me, target, mutual, ask }: DraftArgs): string {
-  const asker = me.name === "You" ? "a founder I know" : me.name;
-  const writer = mutual?.name ?? "you";
   const cleanAsk = ask.replace(/\.$/, "");
 
-  // For a 1st-degree match the asker IS connected directly, so the intro is
-  // written by the asker reaching out. For a 2nd-degree match the MUTUAL writes
-  // it, connecting the asker to the target.
-  if (!mutual) {
-    return [
-      `Write a short, warm outreach message from ${asker} directly to ${target.name}.`,
-      `${asker} is reaching out because they're looking for: "${cleanAsk}".`,
-      `${target.name}'s background: ${target.headline}. They can help with: ${target.offer}`,
-      ``,
-      `Requirements:`,
-      `- 3 to 5 sentences, friendly and concise.`,
-      `- Reference specifically why ${target.name}'s offer fits the ask.`,
-      `- Use double-opt-in framing — end by asking if they'd be open to a quick chat.`,
-      `- Plain text only. No subject line, no markdown, no placeholders like [Name].`,
-      `Return only the message body.`,
-    ].join("\n");
+  const lines = [
+    `Write a short, warm, forwardable message in the FIRST PERSON ("I"), from the sender directly TO ${target.name}.`,
+    ``,
+    `About the sender (the author of the note): ${me.offer}`,
+    `The sender is looking for: "${cleanAsk}".`,
+    `${target.name} (${target.headline}) can help: ${target.offer}`,
+  ];
+
+  if (mutual) {
+    lines.push(
+      `The sender and ${target.name} share a mutual connection, ${mutual.name}, who suggested the connection and is happy to vouch for the sender.`
+    );
   }
 
-  return [
-    `You are ${writer}. Write a warm, double-opt-in introduction message that ${writer} would send to ${target.name}, offering to connect them with ${asker}.`,
-    ``,
-    `Context:`,
-    `- ${asker} is looking for: "${cleanAsk}".`,
-    `- ${target.name} (${target.headline}) can help: ${target.offer}`,
-    `- ${writer} knows both people and is making a warm intro.`,
+  lines.push(
     ``,
     `Requirements:`,
-    `- Write in ${writer}'s first-person voice.`,
+    `- First person, in the SENDER's voice${mutual ? ` — NOT ${mutual.name}'s voice` : ""}.`,
     `- 3 to 5 sentences, warm and concise.`,
-    `- Explain specifically why ${target.name}'s offer is a strong fit for what ${asker} needs.`,
-    `- Use double-opt-in framing — explicitly ask ${target.name} if they'd be open to the intro (e.g. "mind if I connect you two?").`,
+    ...(mutual
+      ? [`- Naturally mention that ${mutual.name} suggested the connection / is vouching.`]
+      : []),
+    `- Reference specifically why ${target.name}'s background fits what the sender needs.`,
+    `- End with double-opt-in framing — ask if they'd be open to a quick chat.`,
     `- Plain text only. No subject line, no markdown, no placeholders like [Name].`,
-    `Return only the message body.`,
-  ].join("\n");
+    `Return only the message body.`
+  );
+
+  return lines.join("\n");
 }
 
 /**

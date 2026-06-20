@@ -84,17 +84,17 @@ function IntroBody({
       <div className="flex items-center gap-3">
         <div
           className="flex h-11 w-11 items-center justify-center rounded-xl text-sm font-semibold text-white shadow-[0_0_16px_rgba(0,0,0,0.5)] ring-1 ring-white/10"
-          style={{ background: mutual?.avatarColor ?? target.avatarColor ?? "#6366f1" }}
+          style={{ background: target.avatarColor ?? "#6366f1" }}
         >
-          {initials(mutual?.name ?? target.name)}
+          {initials(target.name)}
         </div>
         <div>
           <h2 className="text-base font-semibold text-slate-100">
-            Draft intro {mutual ? `from ${mutual.name}` : `to ${target.name}`}
+            Request intro to {target.name}
           </h2>
           <p className="text-xs text-slate-400">
             {mutual
-              ? `Written in ${mutual.name.split(" ")[0]}'s voice — ready to send to ${target.name}`
+              ? `Your note — ${mutual.name.split(" ")[0]} can forward it and vouch`
               : `A direct note to ${target.name}`}
           </p>
         </div>
@@ -159,7 +159,7 @@ function IntroBody({
             {stage === "sent" && (
               <PendingRow>
                 {mutual && match.endorsement
-                  ? `Request sent — asking ${mutual.name.split(" ")[0]} to vouch…`
+                  ? `Request sent to ${target.name.split(" ")[0]} — asking ${mutual.name.split(" ")[0]} to vouch…`
                   : `Request sent — waiting for ${target.name.split(" ")[0]} to accept…`}
               </PendingRow>
             )}
@@ -171,7 +171,7 @@ function IntroBody({
                 <div className="animate-rise mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] p-3.5">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
                     <BadgeCheck size={14} />
-                    {mutual.name.split(" ")[0]} vouched for this intro
+                    {mutual.name.split(" ")[0]} vouched for you
                     <span className="ml-auto rounded-full bg-emerald-400/15 px-2 py-0.5 text-[10px] tabular-nums text-emerald-200 ring-1 ring-emerald-400/25">
                       {match.endorsement.score}/10
                     </span>
