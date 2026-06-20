@@ -10,7 +10,11 @@ import { cn, initials } from "./ui/cn";
  * them to someone you also know. You add a 1–10 confidence + a note — signal,
  * not a gate. Faked send (client state) — no backend needed for the demo.
  */
-export function VouchInbox() {
+export function VouchInbox({
+  onSelect,
+}: {
+  onSelect?: (req: VouchRequestView) => void;
+}) {
   const [requests, setRequests] = useState<VouchRequestView[] | null>(null);
 
   useEffect(() => {
@@ -49,13 +53,19 @@ export function VouchInbox() {
         vouch · you&apos;re their mutual
       </p>
       {requests.map((vr) => (
-        <VouchItem key={vr.id} req={vr} />
+        <VouchItem key={vr.id} req={vr} onSelect={onSelect} />
       ))}
     </div>
   );
 }
 
-function VouchItem({ req }: { req: VouchRequestView }) {
+function VouchItem({
+  req,
+  onSelect,
+}: {
+  req: VouchRequestView;
+  onSelect?: (req: VouchRequestView) => void;
+}) {
   const [score, setScore] = useState(7);
   const [note, setNote] = useState("");
   const [sent, setSent] = useState(false);
@@ -76,7 +86,10 @@ function VouchItem({ req }: { req: VouchRequestView }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 backdrop-blur-xl">
+    <div
+      onClick={() => onSelect?.(req)}
+      className="cursor-pointer rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 backdrop-blur-xl transition hover:border-violet-400/25"
+    >
       {/* who → whom */}
       <div className="flex items-center gap-2 text-[13px] font-medium text-slate-200">
         <Avatar name={req.requester.name} />
@@ -105,6 +118,7 @@ function VouchItem({ req }: { req: VouchRequestView }) {
           min={1}
           max={10}
           value={score}
+          onClick={(e) => e.stopPropagation()}
           onChange={(e) => setScore(Number(e.target.value))}
           className="mt-2 w-full accent-violet-500"
         />
@@ -120,7 +134,10 @@ function VouchItem({ req }: { req: VouchRequestView }) {
       />
 
       <button
-        onClick={() => setSent(true)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setSent(true);
+        }}
         className={cn(
           "mt-3 inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 px-3.5 py-2 text-xs font-semibold text-white shadow-[0_0_16px_rgba(139,92,246,0.4)] transition hover:-translate-y-0.5 hover:shadow-[0_0_24px_rgba(139,92,246,0.6)]"
         )}
