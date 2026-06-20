@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Network, Sparkles } from "lucide-react";
+import { Loader2, Network, Search, Sparkles } from "lucide-react";
 import type {
   Graph,
   IntroResponse,
@@ -9,12 +9,16 @@ import type {
   MatchResult,
   Persona,
 } from "@/lib/types";
+import { cn } from "@/components/ui/cn";
 import { Onboarding } from "@/components/Onboarding";
 import { AskBar } from "@/components/AskBar";
 import { YouCard } from "@/components/YouCard";
 import { ResultsPanel } from "@/components/ResultsPanel";
+import { VouchInbox } from "@/components/VouchInbox";
 import { IntroModal } from "@/components/IntroModal";
 import { NetworkGraph } from "@/components/graph/NetworkGraph";
+
+type Tab = "matches" | "inbox";
 
 const PREFILLED_ASK = "A technical cofounder who knows payments infrastructure";
 
@@ -40,6 +44,9 @@ function App() {
   const [intro, setIntro] = useState<IntroResponse | null>(null);
   const [introMatch, setIntroMatch] = useState<MatchResult | null>(null);
 
+  const [tab, setTab] = useState<Tab>("matches");
+  const [vouchCount, setVouchCount] = useState(0);
+
   // load the network graph for the viz
   useEffect(() => {
     fetch("/api/personas")
@@ -48,6 +55,10 @@ function App() {
         setGraph(g);
         setMe(g.personas.find((p) => p.id === g.me) ?? null);
       })
+      .catch(() => {});
+    fetch("/api/vouch-requests")
+      .then((r) => r.json())
+      .then((d) => setVouchCount(d.requests?.length ?? 0))
       .catch(() => {});
   }, []);
 
@@ -104,23 +115,31 @@ function App() {
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[400px_1fr]">
         {/* ── Left: ask + you + results ──────────────────────────────── */}
         <aside className="thin-scroll flex min-h-0 flex-col gap-4 overflow-y-auto border-r border-white/[0.07] bg-[#0c0d18]/70 p-5 backdrop-blur-xl">
-          <AskBar
-            value={ask}
-            onChange={setAsk}
-            onSubmit={runMatch}
-            loading={matching}
-          />
-          {me && <YouCard me={me} />}
-          {graph && (
-            <ResultsPanel
-              graph={graph}
-              results={results}
-              loading={matching}
-              searched={searched}
-              selectedId={selected?.persona.id ?? null}
-              onSelect={setSelected}
-              onDraft={draftIntro}
-            />
+          <TabSwitcher tab={tab} setTab={setTab} vouchCount={vouchCount} />
+
+          {tab === "matches" ? (
+            <>
+              <AskBar
+                value={ask}
+                onChange={setAsk}
+                onSubmit={runMatch}
+                loading={matching}
+              />
+              {me && <YouCard me={me} />}
+              {graph && (
+                <ResultsPanel
+                  graph={graph}
+                  results={results}
+                  loading={matching}
+                  searched={searched}
+                  selectedId={selected?.persona.id ?? null}
+                  onSelect={setSelected}
+                  onDraft={draftIntro}
+                />
+              )}
+            </>
+          ) : (
+            <VouchInbox />
           )}
         </aside>
 
@@ -149,6 +168,65 @@ function App() {
         intro={intro}
       />
     </div>
+  );
+}
+
+function TabSwitcher({
+  tab,
+  setTab,
+  vouchCount,
+}: {
+  tab: Tab;
+  setTab: (t: Tab) => void;
+  vouchCount: number;
+}) {
+  return (
+    <div className="flex gap-1 rounded-xl border border-white/[0.07] bg-white/[0.03] p-1">
+      <TabButton active={tab === "matches"} onClick={() => setTab("matches")}>
+        <Search size={13} />
+        Matches
+      </TabButton>
+      <TabButton active={tab === "inbox"} onClick={() => setTab("inbox")}>
+        <Sparkles size={13} />
+        Vouch requests
+        {vouchCount > 0 && (
+          <span
+            className={cn(
+              "ml-1 rounded-full px-1.5 text-[10px] font-bold tabular-nums",
+              tab === "inbox"
+                ? "bg-white/20 text-white"
+                : "bg-violet-500/25 text-violet-200"
+            )}
+          >
+            {vouchCount}
+          </span>
+        )}
+      </TabButton>
+    </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition",
+        active
+          ? "bg-gradient-to-r from-indigo-500/90 to-violet-500/90 text-white shadow-[0_0_16px_rgba(139,92,246,0.35)]"
+          : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+      )}
+    >
+      {children}
+    </button>
   );
 }
 

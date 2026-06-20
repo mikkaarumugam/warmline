@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getGraph } from "@/lib/data";
 import { matchAsk, warmup } from "@/lib/engine/match";
+import { ENDORSEMENTS } from "@/data/seed/vouches";
 import type { MatchRequest, MatchResponse } from "@/lib/types";
 
 // transformers.js needs the Node runtime (not Edge).
@@ -26,6 +27,15 @@ export async function POST(req: Request) {
 
   const graph = getGraph();
   const results = await matchAsk(graph, ask, body.meId ?? graph.me);
+
+  // Attach the mutual's declared vouch (when present) to each match.
+  for (const r of results) {
+    if (r.mutual) {
+      const e = ENDORSEMENTS[`${r.mutual.id}|${r.persona.id}`];
+      if (e) r.endorsement = e;
+    }
+  }
+
   const response: MatchResponse = { ask, results };
   return NextResponse.json(response);
 }

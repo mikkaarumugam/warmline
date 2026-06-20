@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, PenLine } from "lucide-react";
+import { ArrowRight, PenLine, BadgeCheck } from "lucide-react";
 import type { MatchResult, Graph } from "@/lib/types";
 import { cn, initials } from "./ui/cn";
 
@@ -21,9 +21,13 @@ export function ResultCard({
   onSelect,
   onDraft,
 }: ResultCardProps) {
-  const { persona, score, path, mutual } = result;
+  const { persona, score, path, mutual, endorsement } = result;
   const pct = Math.round(score * 100);
   const meName = graph.personas.find((p) => p.id === graph.me)?.name ?? "You";
+  const voucherName =
+    graph.personas.find((p) => p.id === endorsement?.byId)?.name ??
+    mutual?.name ??
+    "Your mutual";
 
   return (
     <button
@@ -97,6 +101,23 @@ export function ResultCard({
             )}
             <PathPill label={persona.name} tone="target" />
           </div>
+
+          {endorsement && (
+            <div className="mt-2.5 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] p-2.5">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-300">
+                <BadgeCheck size={13} />
+                {voucherName.split(" ")[0]} backs this
+                <span className="ml-auto rounded-full bg-emerald-400/15 px-1.5 py-0.5 text-[10px] tabular-nums text-emerald-200 ring-1 ring-emerald-400/25">
+                  {endorsement.score}/10
+                </span>
+              </div>
+              {endorsement.note && (
+                <p className="mt-1 text-[11px] italic leading-snug text-slate-300">
+                  “{endorsement.note}”
+                </p>
+              )}
+            </div>
+          )}
 
           <div
             className={cn(

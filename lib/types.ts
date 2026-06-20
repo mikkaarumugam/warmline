@@ -43,6 +43,19 @@ export interface Path {
   degree: 1 | 2;
 }
 
+/**
+ * A declared vouch from a mutual: their confidence that this match is worth it.
+ * The mutual is NOT a gate — they add signal, not permission. Declared, not inferred.
+ */
+export interface Endorsement {
+  /** The mutual who vouched. */
+  byId: PersonaId;
+  /** Confidence they back the recommendation, 1..10. */
+  score: number;
+  /** Optional human note that travels with the vouch. */
+  note?: string;
+}
+
 /** One ranked match: someone whose declared OFFER matched your ASK. */
 export interface MatchResult {
   persona: Persona;
@@ -56,6 +69,8 @@ export interface MatchResult {
   path: Path;
   /** The connector for 2nd-degree matches; undefined when 1st degree. */
   mutual?: Persona;
+  /** The mutual's declared vouch for this match, when present. */
+  endorsement?: Endorsement;
 }
 
 export interface MatchRequest {
@@ -84,4 +99,27 @@ export interface IntroResponse {
   message: string;
   /** Whether Claude wrote it, or we fell back to a template (no API key). */
   generatedBy: "claude" | "template";
+}
+
+/**
+ * An inbound vouch request: someone in YOUR network wants to reach a person you
+ * also know, and is asking YOU to add a confidence score + note. This is the
+ * "voucher" side of the two-sided product — you're both an asker and a voucher.
+ */
+export interface VouchRequest {
+  id: string;
+  /** Your contact asking you to vouch for them. */
+  requesterId: PersonaId;
+  /** Who they want to reach (you're the mutual). */
+  targetId: PersonaId;
+  /** Why they want the intro. */
+  context: string;
+}
+
+/** A VouchRequest with its personas resolved, for the inbox UI. */
+export interface VouchRequestView {
+  id: string;
+  requester: Persona;
+  target: Persona;
+  context: string;
 }
