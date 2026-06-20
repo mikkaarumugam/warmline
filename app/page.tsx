@@ -9,6 +9,7 @@ import type {
   MatchResult,
   Persona,
 } from "@/lib/types";
+import { matchAskClient } from "@/lib/engine/match-client";
 import { cn } from "@/components/ui/cn";
 import { Onboarding } from "@/components/Onboarding";
 import { AskBar } from "@/components/AskBar";
@@ -47,6 +48,8 @@ function App() {
   const [tab, setTab] = useState<Tab>("matches");
   const [vouchCount, setVouchCount] = useState(0);
   const [matchError, setMatchError] = useState(false);
+  // One-time: true only while the embedding model downloads on the first search.
+  const [modelLoading, setModelLoading] = useState(false);
 
   // load the network graph for the viz
   useEffect(() => {
@@ -64,32 +67,48 @@ function App() {
   }, []);
 
   const runMatch = useCallback(async () => {
-    if (!ask.trim()) return;
+    if (!ask.trim() || !graph) return;
     setMatching(true);
     setSelected(null);
     setMatchError(false);
     try {
-      const res = await fetch("/api/match", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ask }),
-      });
-      if (!res.ok) throw new Error(`match failed: ${res.status}`);
-      const data: MatchResponse = await res.json();
-      const next = data.results ?? [];
+      // Primary path: run the embedding model CLIENT-SIDE (WASM backend) so it
+      // works on Vercel's serverless, where the server engine's native
+      // onnxruntime .so can't load. The model downloads once on the first search
+      // (onColdLoad drives the "loading model…" banner), then caches in-browser.
+      const next = await matchAskClient(graph, ask, graph.me, () =>
+        setModelLoading(true)
+      );
       setResults(next);
       setSearched(true);
       // auto-select the top match so the graph lights up immediately
       setSelected(next[0] ?? null);
-    } catch {
-      // surface the failure instead of silently reverting to the empty state
-      setResults([]);
-      setSearched(true);
-      setMatchError(true);
+    } catch (clientErr) {
+      // Fallback: the server /api/match route (works locally; may 500 on Vercel).
+      try {
+        const res = await fetch("/api/match", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ask }),
+        });
+        if (!res.ok) throw new Error(`match failed: ${res.status}`);
+        const data: MatchResponse = await res.json();
+        const next = data.results ?? [];
+        setResults(next);
+        setSearched(true);
+        setSelected(next[0] ?? null);
+      } catch {
+        // surface the failure instead of silently reverting to the empty state
+        console.error("match failed (client + fallback)", clientErr);
+        setResults([]);
+        setSearched(true);
+        setMatchError(true);
+      }
     } finally {
+      setModelLoading(false);
       setMatching(false);
     }
-  }, [ask]);
+  }, [ask, graph]);
 
   const draftIntro = useCallback(
     async (r: MatchResult) => {
@@ -133,6 +152,13 @@ function App() {
                 onSubmit={runMatch}
                 loading={matching}
               />
+              {modelLoading && (
+                <div className="flex items-center gap-2 rounded-xl border border-indigo-400/20 bg-indigo-500/10 px-3.5 py-2.5 text-[12px] font-medium text-indigo-200">
+                  <Loader2 size={14} className="animate-spin" />
+                  Loading the match model… one-time download, then it runs
+                  instantly in your browser.
+                </div>
+              )}
               {me && <YouCard me={me} />}
               {graph && (
                 <ResultsPanel
