@@ -59,9 +59,9 @@ export const PERSONAS: Persona[] = [
   {
     id: "samuel",
     name: "Samuel Okoro",
-    headline: "Payments infra eng, ex-Adyen",
+    headline: "Payments infrastructure engineer, ex-Adyen",
     offer:
-      "Payments infrastructure engineer. I built billing and ledger systems at Adyen.",
+      "Technical cofounder material: a payments-infrastructure engineer (ex-Adyen) who builds billing, ledger, and payment-rail systems from scratch.",
     ask: "An early-stage fintech to join as a technical cofounder.",
     community: "fintech",
     avatarColor: COLORS.fintech,
