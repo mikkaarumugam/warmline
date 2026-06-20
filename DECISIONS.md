@@ -86,9 +86,24 @@ Target **Solvimon** ("most likely to be a successful business"). **Forwent** the
 bounty (so we're not tied to Vercel). Skipped Codeplain/Sui/BGA/Bilt/FLock.
 
 ## Open / in-flight decisions
-- **Flow-timing**: the request → vouch → accept → booking pacing is faked `setTimeout`
-  delays. Deciding how it should *feel* (faster staged reveal vs. click-to-advance vs.
-  instant-staggered). Lives in `components/IntroModal.tsx`.
-- **Client-side matching refactor** (Option A) — in progress to fix the live Vercel deploy.
+- **Flow-timing & waiting states (ACTIVE — being worked next):** the intro flow has
+  faked stages in `components/IntroModal.tsx` — `draft → sent → vouched → connected` —
+  advanced by `setTimeout` (~1.2s, ~2.8s) to simulate "request sent → mutual vouches →
+  target accepts." Real life isn't instant: the target may take hours to accept, the
+  mutual to vouch. **Open question:** how should the UI represent *waiting* honestly
+  while staying controllable in a live demo? Options on the table: faster staged reveal,
+  **click-to-advance** (demo control), instant-staggered, or an honest **pending** state
+  ("Request sent · we'll let you know when Samuel responds") with the accept/booking as a
+  later notification. Decide the *feel*, then wire it in `IntroModal.tsx` only.
+  ⚠️ Do NOT touch the match path (`app/page.tsx` runMatch, `lib/engine/match*`,
+  `app/api/match|personas`) — a parallel session owns the client-side refactor there.
+- **Client-side matching refactor** (Option A) — a parallel session is moving matching
+  into the browser to fix the live Vercel `/api/match` 500. When it lands, its branch
+  must be merged back into the working branch (disjoint files → clean merge).
 - **Streaming intro draft** — only worth it if an `ANTHROPIC_API_KEY` is set (else the
   template is instant anyway).
+
+## Run / verify (operational)
+`npm run dev` → http://localhost:3000. Golden-path check: post the hero ask → Samuel #1
+via Priya. For visual checks, a throwaway `playwright-core` driving the system Chrome
+works (see how prior screenshots were taken). Keep `npm run build` green.
