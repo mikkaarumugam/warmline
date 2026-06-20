@@ -1,2 +1,3 @@
 @AGENTS.md
 @CONTRACT.md
+@DECISIONS.md
