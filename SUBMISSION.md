@@ -10,9 +10,9 @@
 ## Final submission — 4 required links
 | # | Field | What it is | Our plan | Status |
 |---|-------|-----------|----------|--------|
-| 1 | **Link to Code** | Public GitHub repo | Push this repo public; strong README | ☐ repo not pushed yet |
-| 2 | **Link to Presentation** | Deck (Google Slides / Canva / DocSend) | Build from `pitch/deck.md` → hosted slides | ☐ deck source only |
-| 3 | **Link to Demo Video** | Video (YouTube/Loom) of the demo | Record the golden-path walkthrough after deploy | ☐ not recorded |
+| 1 | **Link to Code** | Public GitHub repo | Push this repo public (README ✅ done) | ☐ repo not pushed yet |
+| 2 | **Link to Presentation** | Deck (Google Slides / Canva / DocSend) | ✅ `pitch/Warmline-deck.pdf` built — just needs hosting/link | ✅ deck ready |
+| 3 | **Link to Demo Video** | Video (YouTube/Loom) of the demo | Record golden-path walkthrough after deploy + flow freeze | ☐ not recorded |
 | 4 | **Live Demo Link** | Deployed app (Vercel/Netlify) | `npx vercel` deploy → prod URL | ☐ needs Vercel login |
 
 ## Checkpoint 1 submission (separate form)
