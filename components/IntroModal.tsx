@@ -12,6 +12,7 @@ import {
   CalendarCheck,
   Mail,
   Phone,
+  BadgeCheck,
 } from "lucide-react";
 import type { IntroResponse, MatchResult } from "@/lib/types";
 import { Modal } from "./ui/Modal";
@@ -41,7 +42,7 @@ export function IntroModal({ open, onClose, match, loading, intro }: IntroModalP
   );
 }
 
-type Stage = "draft" | "sent" | "connected";
+type Stage = "draft" | "sent" | "vouched" | "connected";
 
 function IntroBody({
   match,
@@ -68,8 +69,14 @@ function IntroBody({
 
   function send() {
     setStage("sent");
-    // simulate the target accepting (double opt-in) — faked for the demo
-    setTimeout(() => setStage("connected"), 1700);
+    // Causal chain (faked for the demo): you request → the mutual is asked to
+    // vouch → they vouch → the target accepts with the vouch attached.
+    if (match.endorsement && mutual) {
+      setTimeout(() => setStage("vouched"), 1200);
+      setTimeout(() => setStage("connected"), 2800);
+    } else {
+      setTimeout(() => setStage("connected"), 1600);
+    }
   }
 
   return (
@@ -148,15 +155,40 @@ function IntroBody({
               )}
             </div>
 
-            {/* ── pending: waiting for the target to accept (double opt-in) ── */}
+            {/* ── request sent: the mutual is asked to vouch ── */}
             {stage === "sent" && (
-              <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-slate-300">
-                <Loader2 size={16} className="animate-spin text-violet-300" />
-                <span>
-                  Request sent{mutual ? ` via ${mutual.name.split(" ")[0]}` : ""} —
-                  waiting for {target.name.split(" ")[0]} to accept…
-                </span>
-              </div>
+              <PendingRow>
+                {mutual && match.endorsement
+                  ? `Request sent — asking ${mutual.name.split(" ")[0]} to vouch…`
+                  : `Request sent — waiting for ${target.name.split(" ")[0]} to accept…`}
+              </PendingRow>
+            )}
+
+            {/* ── the mutual's vouch — appears only AFTER you've requested ── */}
+            {(stage === "vouched" || stage === "connected") &&
+              match.endorsement &&
+              mutual && (
+                <div className="animate-rise mt-4 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.06] p-3.5">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-300">
+                    <BadgeCheck size={14} />
+                    {mutual.name.split(" ")[0]} vouched for this intro
+                    <span className="ml-auto rounded-full bg-emerald-400/15 px-2 py-0.5 text-[10px] tabular-nums text-emerald-200 ring-1 ring-emerald-400/25">
+                      {match.endorsement.score}/10
+                    </span>
+                  </div>
+                  {match.endorsement.note && (
+                    <p className="mt-1 text-[12px] italic leading-snug text-slate-300">
+                      “{match.endorsement.note}”
+                    </p>
+                  )}
+                </div>
+              )}
+
+            {/* ── vouch attached, now waiting for the target ── */}
+            {stage === "vouched" && (
+              <PendingRow>
+                Vouch attached — waiting for {target.name.split(" ")[0]} to accept…
+              </PendingRow>
             )}
 
             {/* ── connected: handoff to a real conversation ── */}
@@ -235,6 +267,15 @@ function mockEmail(name: string): string {
   const first = parts[0] ?? "hello";
   const last = parts[parts.length - 1] ?? "";
   return `${first}${last ? "." + last : ""}@gmail.com`;
+}
+
+function PendingRow({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-4 flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-slate-300">
+      <Loader2 size={16} className="animate-spin text-violet-300" />
+      <span>{children}</span>
+    </div>
+  );
 }
 
 function DraftSkeleton() {
