@@ -46,6 +46,7 @@ function App() {
 
   const [tab, setTab] = useState<Tab>("matches");
   const [vouchCount, setVouchCount] = useState(0);
+  const [matchError, setMatchError] = useState(false);
 
   // load the network graph for the viz
   useEffect(() => {
@@ -66,18 +67,25 @@ function App() {
     if (!ask.trim()) return;
     setMatching(true);
     setSelected(null);
+    setMatchError(false);
     try {
       const res = await fetch("/api/match", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ask }),
       });
+      if (!res.ok) throw new Error(`match failed: ${res.status}`);
       const data: MatchResponse = await res.json();
       const next = data.results ?? [];
       setResults(next);
       setSearched(true);
       // auto-select the top match so the graph lights up immediately
       setSelected(next[0] ?? null);
+    } catch {
+      // surface the failure instead of silently reverting to the empty state
+      setResults([]);
+      setSearched(true);
+      setMatchError(true);
     } finally {
       setMatching(false);
     }
@@ -132,6 +140,8 @@ function App() {
                   results={results}
                   loading={matching}
                   searched={searched}
+                  error={matchError}
+                  onRetry={runMatch}
                   selectedId={selected?.persona.id ?? null}
                   onSelect={setSelected}
                   onDraft={draftIntro}

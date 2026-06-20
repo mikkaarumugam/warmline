@@ -1,6 +1,6 @@
 "use client";
 
-import { Users, Sparkles } from "lucide-react";
+import { Users, Sparkles, AlertTriangle, RotateCw } from "lucide-react";
 import type { Graph, MatchResult } from "@/lib/types";
 import { ResultCard } from "./ResultCard";
 
@@ -9,6 +9,8 @@ interface ResultsPanelProps {
   results: MatchResult[];
   loading: boolean;
   searched: boolean;
+  error?: boolean;
+  onRetry?: () => void;
   selectedId: string | null;
   onSelect: (r: MatchResult) => void;
   onDraft: (r: MatchResult) => void;
@@ -19,6 +21,8 @@ export function ResultsPanel({
   results,
   loading,
   searched,
+  error,
+  onRetry,
   selectedId,
   onSelect,
   onDraft,
@@ -29,6 +33,31 @@ export function ResultsPanel({
         {[0, 1, 2].map((i) => (
           <CardSkeleton key={i} />
         ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] px-6 py-12 text-center">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-400/10 text-amber-300 ring-1 ring-amber-400/20">
+          <AlertTriangle size={20} />
+        </div>
+        <p className="mt-3 text-sm font-semibold text-slate-200">
+          Couldn&apos;t load matches
+        </p>
+        <p className="mt-1 max-w-xs text-xs leading-relaxed text-slate-400">
+          The matching service hit an error. Give it a moment and try again.
+        </p>
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-white/[0.1] bg-white/[0.04] px-3.5 py-2 text-xs font-semibold text-slate-200 transition hover:border-indigo-400/40 hover:text-indigo-200"
+          >
+            <RotateCw size={13} />
+            Retry
+          </button>
+        )}
       </div>
     );
   }
