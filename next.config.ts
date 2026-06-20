@@ -1,14 +1,21 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // @huggingface/transformers pulls in onnxruntime-node, which ships a native
-  // libonnxruntime.so. Turbopack won't bundle the .so, so on Vercel's
-  // serverless runtime the import crashes ("cannot open shared object file").
-  // Keep the package external so it's required from node_modules at runtime...
-  serverExternalPackages: ["@huggingface/transformers"],
-  // ...and force the native binary into the /api/match function's file trace.
-  outputFileTracingIncludes: {
-    "/api/match": ["./node_modules/onnxruntime-node/bin/**/*"],
+  // Semantic matching now runs CLIENT-SIDE (lib/engine/match-client.ts), where
+  // @huggingface/transformers uses its WASM backend (onnxruntime-web) — no native
+  // library. The browser dynamic-imports the package, but Next's server file
+  // tracing would otherwise follow that import and pull the NODE variant
+  // (onnxruntime-node ships ~210 MB of native libs) into the serverless function
+  // bundles, blowing past Vercel's 250 MB unzipped function limit. Nothing runs
+  // the model server-side anymore (/api/match is a model-free lexical fallback),
+  // so exclude these from every server function trace.
+  outputFileTracingExcludes: {
+    "*": [
+      "node_modules/@huggingface/transformers/**",
+      "node_modules/onnxruntime-node/**",
+      "node_modules/onnxruntime-web/**",
+      "node_modules/sharp/**",
+    ],
   },
 };
 
