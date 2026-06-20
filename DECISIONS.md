@@ -197,6 +197,28 @@ whenever they get to it. The intro flow no longer **fakes progress with timers**
 are **always declared, never scraped** — this reinforces the wedge instead of
 undercutting it. Keep it out of the hero matching flow (no dead buttons there).
 
+## Growth model & the LinkedIn question (GTM — pitch, NOT the hackathon build)
+- **Sign in with LinkedIn = identity, NOT the network.** LinkedIn's OAuth/OIDC returns
+  name/headline/photo/email (auto-fills the profile, adds trust, easy + sanctioned to
+  build). It does **not** return connections — never conflate the two.
+- **Importing the connections CSV is a trap.** It gives you *names*, not opted-in users —
+  a graph of **ghosts** who can't receive intros or vouch. It also quietly breaks our own
+  "declared, consented, not scraped" wedge (storing people who never opted in), and
+  LinkedIn now strips emails from exports. Its ONE legit use: a checklist of *who to invite*.
+- **The graph grows by INVITES, not imports.** You don't copy edges from LinkedIn; you
+  re-create them as real, consented edges when people join:
+  join → declare offer/ask → invite people you actually know → they join + declare →
+  a both-sides-confirmed edge forms → their invites grow your 2nd degree. Every edge is
+  real and opted-in.
+- **Cold start: go community-first.** Seed one dense pocket (an accelerator batch, a
+  company's alumni, one city's fintech) so warm paths exist immediately — the
+  Facebook/LinkedIn "one campus at a time" playbook. The **vouch inbox is itself a growth
+  hook** (people get pulled back to vouch, which re-engages them).
+- **Pitch one-liner:** *"Sign in with LinkedIn for who you are → invite the people you
+  actually know → everyone declares what they offer and need. The graph grows consented,
+  one real edge at a time — we never scrape."* Stronger than "import from LinkedIn":
+  honest, and it dodges the impossible part. Prime Solvimon (successful-business) material.
+
 ## Golden path / demo (must always hold)
 Ask **"a technical cofounder who knows payments infrastructure"** → **Samuel Okoro**
 (payments infra, ex-Adyen) #1 **via Priya** (2nd degree). Semantic, not keyword
