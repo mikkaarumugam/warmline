@@ -52,15 +52,22 @@ function PersonaNodeBase({ data }: NodeProps & { data: PersonaNodeData }) {
 
       <div
         className={cn(
-          "flex h-full w-full items-center justify-center rounded-full font-semibold text-white shadow-md transition-transform duration-300",
-          isMe ? "text-base ring-4" : degree === 1 ? "text-sm ring-2" : "text-[11px] ring-2",
-          active ? "scale-110 ring-violet-300" : "ring-white"
+          "flex h-full w-full items-center justify-center rounded-full font-semibold text-white transition-transform duration-300",
+          isMe ? "text-base ring-2" : degree === 1 ? "text-sm ring-1" : "text-[11px] ring-1",
+          active ? "scale-110" : ""
         )}
         style={{
-          background: isMe ? "linear-gradient(135deg,#6366f1,#8b5cf6)" : color,
-          boxShadow: active
-            ? "0 0 0 4px rgba(139,92,246,0.25), 0 8px 24px rgba(139,92,246,0.45)"
-            : undefined,
+          background: isMe ? "linear-gradient(135deg,#6366f1,#a855f7)" : color,
+          // hairline rim to read crisply on the dark canvas
+          ["--tw-ring-color" as string]: active
+            ? "rgba(196,181,253,0.85)"
+            : "rgba(255,255,255,0.18)",
+          // luminous outer glow in the node's own color
+          boxShadow: isMe
+            ? "0 0 0 6px rgba(129,140,248,0.12), 0 0 26px 4px rgba(139,92,246,0.65), 0 0 56px 10px rgba(139,92,246,0.35)"
+            : active
+              ? `0 0 0 4px rgba(196,181,253,0.18), 0 0 22px 3px ${color}cc, 0 0 44px 8px ${color}66`
+              : `0 0 14px 1px ${color}80, 0 0 28px 4px ${color}33`,
         }}
       >
         {isMe ? "You" : initials(name)}
@@ -69,8 +76,8 @@ function PersonaNodeBase({ data }: NodeProps & { data: PersonaNodeData }) {
       {/* name label — absolutely positioned so it doesn't grow the measured box */}
       <div
         className={cn(
-          "pointer-events-none absolute left-1/2 top-full mt-1.5 w-[120px] -translate-x-1/2 truncate text-center text-[11px] font-medium leading-tight transition-opacity duration-200",
-          active ? "text-slate-900" : "text-slate-600",
+          "pointer-events-none absolute left-1/2 top-full mt-1.5 w-[120px] -translate-x-1/2 truncate text-center text-[11px] font-medium leading-tight transition-opacity duration-200 [text-shadow:0_1px_6px_rgba(0,0,0,0.7)]",
+          active ? "text-slate-50" : "text-slate-300",
           labelAlways ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         )}
       >
@@ -80,10 +87,10 @@ function PersonaNodeBase({ data }: NodeProps & { data: PersonaNodeData }) {
       {active && pathRole && pathRole !== "you" && (
         <span
           className={cn(
-            "pointer-events-none absolute left-1/2 top-full mt-[22px] -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide",
+            "pointer-events-none absolute left-1/2 top-full mt-[22px] -translate-x-1/2 whitespace-nowrap rounded-full px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide ring-1 backdrop-blur-sm",
             pathRole === "mutual"
-              ? "bg-amber-100 text-amber-700"
-              : "bg-violet-100 text-violet-700"
+              ? "bg-amber-400/15 text-amber-200 ring-amber-300/30"
+              : "bg-violet-400/15 text-violet-200 ring-violet-300/30"
           )}
         >
           {pathRole === "mutual" ? "Mutual" : "Match"}

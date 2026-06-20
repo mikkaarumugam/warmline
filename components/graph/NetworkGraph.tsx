@@ -184,11 +184,11 @@ export function NetworkGraph({ graph, selected }: NetworkGraphProps) {
         className: onPath ? "warm-edge" : undefined,
         animated: false,
         style: onPath
-          ? { strokeWidth: 3.5 }
+          ? { strokeWidth: 5 }
           : {
-              stroke: "#cbd5e1",
-              strokeWidth: 1.2,
-              strokeOpacity: hasSelection ? 0.15 : 0.5,
+              stroke: "#5b6178",
+              strokeWidth: 1.1,
+              strokeOpacity: hasSelection ? 0.12 : 0.38,
             },
         zIndex: onPath ? 10 : 0,
       };
@@ -200,10 +200,10 @@ export function NetworkGraph({ graph, selected }: NetworkGraphProps) {
     <div className="relative h-full w-full">
       <svg className="pointer-events-none absolute h-0 w-0">
         <defs>
-          <linearGradient id="warm-gradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#6366f1" />
-            <stop offset="50%" stopColor="#a855f7" />
-            <stop offset="100%" stopColor="#ec4899" />
+          <linearGradient id="warm-gradient" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#818cf8" />
+            <stop offset="45%" stopColor="#a855f7" />
+            <stop offset="100%" stopColor="#f472b6" />
           </linearGradient>
         </defs>
       </svg>
@@ -226,9 +226,9 @@ export function NetworkGraph({ graph, selected }: NetworkGraphProps) {
       >
         <Background
           variant={BackgroundVariant.Dots}
-          gap={26}
-          size={1.4}
-          color="#dcdcef"
+          gap={28}
+          size={1.3}
+          color="#2a2d44"
         />
       </ReactFlow>
     </div>

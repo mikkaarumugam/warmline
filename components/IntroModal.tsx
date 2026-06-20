@@ -50,16 +50,16 @@ function IntroBody({
     <div className="p-7">
         <div className="flex items-center gap-3">
           <div
-            className="flex h-11 w-11 items-center justify-center rounded-xl text-sm font-semibold text-white shadow"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-sm font-semibold text-white shadow-[0_0_16px_rgba(0,0,0,0.5)] ring-1 ring-white/10"
             style={{ background: mutual?.avatarColor ?? target.avatarColor ?? "#6366f1" }}
           >
             {initials(mutual?.name ?? target.name)}
           </div>
           <div>
-            <h2 className="text-base font-semibold text-slate-900">
+            <h2 className="text-base font-semibold text-slate-100">
               Draft intro {mutual ? `from ${mutual.name}` : `to ${target.name}`}
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               {mutual
                 ? `Written in ${mutual.name.split(" ")[0]}'s voice — ready to send to ${target.name}`
                 : `A direct note to ${target.name}`}
@@ -72,22 +72,22 @@ function IntroBody({
             <DraftSkeleton />
           ) : (
             <>
-              <div className="relative rounded-xl border border-slate-200 bg-slate-50/70 p-4">
-                <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-slate-700">
+              <div className="relative rounded-xl border border-white/[0.08] bg-white/[0.03] p-4">
+                <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-slate-200">
                   {intro.message}
                 </p>
               </div>
 
               <div className="mt-3 flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-400">
                   {intro.generatedBy === "claude" ? (
                     <>
-                      <Sparkles size={13} className="text-violet-500" />
+                      <Sparkles size={13} className="text-violet-300" />
                       Written by Claude
                     </>
                   ) : (
                     <>
-                      <FileText size={13} className="text-slate-400" />
+                      <FileText size={13} className="text-slate-500" />
                       Template draft
                     </>
                   )}
@@ -96,11 +96,11 @@ function IntroBody({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={copy}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-xs font-semibold text-slate-200 transition hover:border-indigo-400/40 hover:text-indigo-200"
                   >
                     {copied ? (
                       <>
-                        <Check size={14} className="text-emerald-500" />
+                        <Check size={14} className="text-emerald-400" />
                         Copied
                       </>
                     ) : (
@@ -110,7 +110,7 @@ function IntroBody({
                       </>
                     )}
                   </button>
-                  <button className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-3.5 py-2 text-xs font-semibold text-white shadow shadow-indigo-600/25 transition hover:-translate-y-0.5">
+                  <button className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-500 px-3.5 py-2 text-xs font-semibold text-white shadow-[0_0_16px_rgba(139,92,246,0.4)] transition hover:-translate-y-0.5 hover:shadow-[0_0_24px_rgba(139,92,246,0.6)]">
                     <Send size={13} />
                     Send request
                   </button>
@@ -130,7 +130,7 @@ function DraftSkeleton() {
       <div className="skeleton h-3.5 w-full rounded" />
       <div className="skeleton h-3.5 w-[85%] rounded" />
       <div className="skeleton h-3.5 w-[70%] rounded" />
-      <div className="mt-4 flex items-center gap-2 text-xs font-medium text-violet-500">
+      <div className="mt-4 flex items-center gap-2 text-xs font-medium text-violet-300">
         <Sparkles size={13} className="animate-pulse" />
         Drafting the intro…
       </div>

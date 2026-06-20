@@ -55,7 +55,7 @@ export function ResultsPanel({
 
   return (
     <div className="space-y-3">
-      <p className="text-xs font-medium text-slate-400">
+      <p className="text-xs font-medium text-slate-500">
         {results.length} warm {results.length === 1 ? "match" : "matches"} ·
         ranked by fit &amp; warmth
       </p>
@@ -81,7 +81,7 @@ export function ResultsPanel({
 
 function CardSkeleton() {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+    <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4">
       <div className="flex gap-3">
         <div className="skeleton h-11 w-11 rounded-xl" />
         <div className="flex-1 space-y-2">
@@ -105,12 +105,12 @@ function EmptyState({
   body: string;
 }) {
   return (
-    <div className="flex flex-col items-center rounded-2xl border border-dashed border-slate-200 bg-white/50 px-6 py-12 text-center">
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-500">
+    <div className="flex flex-col items-center rounded-2xl border border-dashed border-white/[0.1] bg-white/[0.02] px-6 py-12 text-center">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-400/10 text-indigo-300 ring-1 ring-indigo-400/20">
         {icon}
       </div>
-      <p className="mt-3 text-sm font-semibold text-slate-700">{title}</p>
-      <p className="mt-1 max-w-xs text-xs leading-relaxed text-slate-500">
+      <p className="mt-3 text-sm font-semibold text-slate-200">{title}</p>
+      <p className="mt-1 max-w-xs text-xs leading-relaxed text-slate-400">
         {body}
       </p>
     </div>

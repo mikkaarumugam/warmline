@@ -98,12 +98,12 @@ function App() {
   );
 
   return (
-    <div className="flex h-dvh flex-col bg-[#fbfbfe]">
+    <div className="app-aurora flex h-dvh flex-col">
       <Header />
 
       <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[400px_1fr]">
         {/* ── Left: ask + you + results ──────────────────────────────── */}
-        <aside className="thin-scroll flex min-h-0 flex-col gap-4 overflow-y-auto border-r border-slate-200 bg-white/40 p-5">
+        <aside className="thin-scroll flex min-h-0 flex-col gap-4 overflow-y-auto border-r border-white/[0.07] bg-[#0c0d18]/70 p-5 backdrop-blur-xl">
           <AskBar
             value={ask}
             onChange={setAsk}
@@ -125,11 +125,13 @@ function App() {
         </aside>
 
         {/* ── Right: the network graph (money shot) ──────────────────── */}
-        <section className="relative min-h-0 bg-gradient-to-br from-slate-50 to-indigo-50/40">
+        <section className="relative min-h-0 bg-[#070710]">
+          {/* faint radial glow centered on the ego node */}
+          <div className="pointer-events-none absolute inset-0 [background:radial-gradient(620px_460px_at_50%_46%,rgba(99,102,241,0.14),transparent_70%)]" />
           {graph ? (
             <NetworkGraph graph={graph} selected={selected} />
           ) : (
-            <div className="flex h-full items-center justify-center text-slate-400">
+            <div className="flex h-full items-center justify-center text-slate-500">
               <Loader2 size={20} className="mr-2 animate-spin" />
               Mapping your network…
             </div>
@@ -152,21 +154,21 @@ function App() {
 
 function Header() {
   return (
-    <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white/70 px-5 py-3 backdrop-blur">
+    <header className="relative z-10 flex shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#0b0b14]/70 px-5 py-3 backdrop-blur-xl">
       <div className="flex items-center gap-2.5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-sm">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-[0_0_18px_rgba(139,92,246,0.55)]">
           <Network size={17} />
         </div>
         <div>
-          <p className="text-sm font-semibold tracking-tight text-slate-900">
-            Warm-Intro Autopilot
+          <p className="bg-gradient-to-r from-slate-50 via-indigo-100 to-violet-200 bg-clip-text text-sm font-semibold tracking-tight text-transparent">
+            Warmline
           </p>
-          <p className="text-[11px] leading-none text-slate-400">
+          <p className="text-[11px] leading-none text-slate-500">
             Two-sided · declared · warm
           </p>
         </div>
       </div>
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50/60 px-2.5 py-1 text-[11px] font-medium text-indigo-600">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-400/20 bg-indigo-500/10 px-2.5 py-1 text-[11px] font-medium text-indigo-200">
         <Sparkles size={12} />
         Demo network
       </span>
@@ -176,15 +178,15 @@ function Header() {
 
 function GraphLegend({ selected }: { selected: MatchResult | null }) {
   return (
-    <div className="pointer-events-none absolute bottom-4 left-4 rounded-xl border border-slate-200/80 bg-white/80 px-3.5 py-2.5 text-[11px] shadow-sm backdrop-blur">
+    <div className="pointer-events-none absolute bottom-4 left-4 rounded-xl border border-white/[0.08] bg-[#0d0e1a]/80 px-3.5 py-2.5 text-[11px] shadow-[0_8px_30px_rgba(0,0,0,0.5)] backdrop-blur-xl">
       {selected ? (
-        <div className="flex items-center gap-2 font-medium text-slate-600">
-          <span className="inline-block h-1 w-6 rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-pink-500" />
+        <div className="flex items-center gap-2 font-medium text-slate-200">
+          <span className="inline-block h-1 w-6 rounded-full bg-gradient-to-r from-indigo-400 via-violet-400 to-pink-400 shadow-[0_0_8px_rgba(167,139,250,0.7)]" />
           Warm path to {selected.persona.name.split(" ")[0]}
         </div>
       ) : (
-        <div className="flex items-center gap-2 font-medium text-slate-500">
-          <span className="inline-block h-2.5 w-2.5 rounded-full bg-slate-300" />
+        <div className="flex items-center gap-2 font-medium text-slate-400">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-slate-600" />
           Select a match to trace the warm path
         </div>
       )}

@@ -33,20 +33,22 @@ export function Modal({ open, onClose, children, className, hideClose }: ModalPr
       aria-modal="true"
     >
       <div
-        className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-black/70 backdrop-blur-md animate-fade-in"
         onClick={onClose}
       />
       <div
         className={cn(
-          "relative w-full max-w-md rounded-2xl border border-slate-200/80 bg-white shadow-2xl shadow-indigo-950/10 animate-pop",
+          "relative w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.1] bg-[#0e0f1c]/95 shadow-[0_24px_80px_rgba(0,0,0,0.7),0_0_0_1px_rgba(139,92,246,0.08)] backdrop-blur-2xl animate-pop",
           className
         )}
       >
+        {/* top accent glow */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-violet-400/50 to-transparent" />
         {!hideClose && (
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute right-3.5 top-3.5 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+            className="absolute right-3.5 top-3.5 z-10 rounded-lg p-1.5 text-slate-500 transition hover:bg-white/5 hover:text-slate-200"
           >
             <X size={18} />
           </button>
