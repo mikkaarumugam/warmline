@@ -1,9 +1,10 @@
 import type { Graph } from "@/lib/types";
-import { MOCK_GRAPH } from "@/lib/mock";
+import { NETWORK } from "@/data/seed/network";
 
-// Single source of the active graph. Track C swaps the internals to load the
-// real seed network from /data/seed/* (JSON). Routes import getGraph() only, so
-// this swap requires no route changes.
+// Single source of the active graph. Track C wired this to the real seed network
+// in /data/seed/network.ts (~100 clustered personas with declared offer/ask and
+// a hand-curated golden path). Routes import getGraph() only, so this swap
+// requires no route changes. Signature is unchanged from the spine.
 export function getGraph(): Graph {
-  return MOCK_GRAPH;
+  return NETWORK;
 }
