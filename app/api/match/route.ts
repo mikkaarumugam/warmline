@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import { getGraph } from "@/lib/data";
-import { matchAsk } from "@/lib/engine/match";
+import { matchAsk, warmup } from "@/lib/engine/match";
 import type { MatchRequest, MatchResponse } from "@/lib/types";
+
+// transformers.js needs the Node runtime (not Edge).
+export const runtime = "nodejs";
+
+// Best-effort warmup: load the embedding model + pre-embed persona offers on
+// first import so the initial real request isn't paying for the cold start.
+void warmup(getGraph());
 
 // POST /api/match  body: { ask: string, meId?: string } → MatchResponse
 export async function POST(req: Request) {
