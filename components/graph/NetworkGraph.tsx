@@ -8,14 +8,6 @@ import {
   type Node,
   type Edge as RFEdge,
 } from "@xyflow/react";
-import {
-  forceSimulation,
-  forceLink,
-  forceManyBody,
-  forceRadial,
-  forceCollide,
-  type SimulationNodeDatum,
-} from "d3-force";
 import type { Graph, MatchResult } from "@/lib/types";
 import { PersonaNode, type PersonaNodeData } from "./PersonaNode";
 
@@ -27,16 +19,12 @@ interface NetworkGraphProps {
   selected: MatchResult | null;
 }
 
-// Radius of each degree ring (px). "me" sits at the center, 1st-degree on the
-// inner ring, 2nd-degree on the outer ring — so the graph literally branches out.
-const RING = 200;
+// Ring radii (px): "me" at center, 1st-degree on the inner ring, 2nd-degree
+// fanned out beyond the specific 1st-degree contact that connects them.
+const R1 = 250;
+const R2 = 500;
 
-interface SimNode extends SimulationNodeDatum {
-  id: string;
-  degree: number;
-}
-
-/** Undirected adjacency map. */
+/** Undirected adjacency map (insertion order preserved, mirroring the engine). */
 function adjacency(graph: Graph): Map<string, Set<string>> {
   const adj = new Map<string, Set<string>>();
   const link = (a: string, b: string) => {
@@ -50,23 +38,6 @@ function adjacency(graph: Graph): Map<string, Set<string>> {
   return adj;
 }
 
-/** BFS distance (degree) from `me` to every reachable node. */
-function degrees(graph: Graph, adj: Map<string, Set<string>>): Map<string, number> {
-  const dist = new Map<string, number>([[graph.me, 0]]);
-  const queue = [graph.me];
-  while (queue.length) {
-    const cur = queue.shift()!;
-    const d = dist.get(cur)!;
-    for (const nb of adj.get(cur) ?? []) {
-      if (!dist.has(nb)) {
-        dist.set(nb, d + 1);
-        queue.push(nb);
-      }
-    }
-  }
-  return dist;
-}
-
 interface LayoutResult {
   positions: Map<string, { x: number; y: number }>;
   degreeOf: Map<string, number>;
@@ -75,56 +46,63 @@ interface LayoutResult {
 }
 
 /**
- * Force-directed, Obsidian-style layout rooted at "me". A radial force pins each
- * node to a ring by its BFS degree (you → 1st → 2nd), while link + charge forces
- * let connected people cluster organically and 2nd-degree nodes branch out next
- * to the mutual that connects them. We only lay out the ≤2-degree warm network —
- * matches can only come from there, so showing the rest is just clutter.
+ * Deterministic ego-network layout rooted at "me":
+ *   • me at the center,
+ *   • 1st-degree contacts evenly spaced on a ring around me,
+ *   • each 2nd-degree node fanned out in the angular wedge of the SPECIFIC
+ *     1st-degree contact that connects them — so the graph branches you → 1st →
+ *     2nd and every 2nd-degree person visibly hangs off their mutual.
+ *
+ * Parent assignment mirrors the engine's `findWarmPaths` (first 1st-degree
+ * contact, in edge order, that reaches the node), so a node's branch matches the
+ * mutual shown in its warm path (e.g. Samuel hangs off Priya).
+ *
+ * We only lay out the ≤2-degree warm network — matches can only come from there.
  */
 function computeLayout(graph: Graph): LayoutResult {
   const adj = adjacency(graph);
-  const degreeOf = degrees(graph, adj);
-
-  const visibleIds = new Set<string>(
-    [...degreeOf.entries()].filter(([, d]) => d <= 2).map(([id]) => id)
-  );
-
-  const simNodes: SimNode[] = [...visibleIds].map((id, i) => {
-    const degree = degreeOf.get(id) ?? 2;
-    // deterministic seed positions on the ring (golden-angle) so the sim
-    // converges to the same organic layout every load.
-    const a = i * 2.399963;
-    return {
-      id,
-      degree,
-      x: Math.cos(a) * degree * RING,
-      y: Math.sin(a) * degree * RING,
-      ...(id === graph.me ? { fx: 0, fy: 0 } : {}),
-    };
-  });
-
-  const links = graph.edges
-    .filter((e) => visibleIds.has(e.source) && visibleIds.has(e.target))
-    .map((e) => ({ source: e.source, target: e.target }));
-
-  const sim = forceSimulation(simNodes)
-    .force(
-      "link",
-      forceLink(links)
-        .id((d) => (d as SimNode).id)
-        .distance(96)
-        .strength(0.22)
-    )
-    .force("charge", forceManyBody().strength(-340))
-    .force("radial", forceRadial((d) => (d as SimNode).degree * RING, 0, 0).strength(0.85))
-    .force("collide", forceCollide(52))
-    .stop();
-
-  // run to convergence synchronously (deterministic, ~instant for this size)
-  for (let i = 0; i < 420; i++) sim.tick();
+  const me = graph.me;
 
   const positions = new Map<string, { x: number; y: number }>();
-  for (const n of simNodes) positions.set(n.id, { x: n.x ?? 0, y: n.y ?? 0 });
+  const degreeOf = new Map<string, number>([[me, 0]]);
+  const visibleIds = new Set<string>([me]);
+  positions.set(me, { x: 0, y: 0 });
+
+  const firstDegree = [...(adj.get(me) ?? [])];
+  const firstSet = new Set(firstDegree);
+
+  // Assign each 2nd-degree node to its connector (first 1st-degree contact, in
+  // order, that links to it) → that contact's branch.
+  const childrenOf = new Map<string, string[]>(firstDegree.map((id) => [id, []]));
+  const claimed = new Set<string>();
+  for (const fd of firstDegree) {
+    for (const nb of adj.get(fd) ?? []) {
+      if (nb === me || firstSet.has(nb) || claimed.has(nb)) continue;
+      claimed.add(nb);
+      childrenOf.get(fd)!.push(nb);
+    }
+  }
+
+  const n1 = firstDegree.length || 1;
+  const wedge = (Math.PI * 2) / n1;
+
+  firstDegree.forEach((fd, i) => {
+    const angle = -Math.PI / 2 + (i / n1) * Math.PI * 2; // start at top
+    positions.set(fd, { x: Math.cos(angle) * R1, y: Math.sin(angle) * R1 });
+    degreeOf.set(fd, 1);
+    visibleIds.add(fd);
+
+    const kids = childrenOf.get(fd)!;
+    const span = wedge * 0.72; // fan width, leaves a margin between branches
+    kids.forEach((kid, j) => {
+      const t = kids.length === 1 ? 0.5 : j / (kids.length - 1);
+      const a = angle + (t - 0.5) * span;
+      const r = R2 + (j % 2 === 0 ? 0 : 70); // stagger to reduce crowding
+      positions.set(kid, { x: Math.cos(a) * r, y: Math.sin(a) * r });
+      degreeOf.set(kid, 2);
+      visibleIds.add(kid);
+    });
+  });
 
   return { positions, degreeOf, visibleIds };
 }
