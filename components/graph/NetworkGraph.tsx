@@ -9,9 +9,11 @@ import {
   type Edge as RFEdge,
 } from "@xyflow/react";
 import type { Graph, MatchResult } from "@/lib/types";
-import { PersonaNode, type PersonaNodeData } from "./PersonaNode";
+import { PersonaNode, type PersonaNodeData, nodeDiameter } from "./PersonaNode";
+import { FloatingEdge } from "./FloatingEdge";
 
 const nodeTypes = { persona: PersonaNode };
+const edgeTypes = { floating: FloatingEdge };
 
 interface NetworkGraphProps {
   graph: Graph;
@@ -43,6 +45,8 @@ interface LayoutResult {
   degreeOf: Map<string, number>;
   /** Only nodes within the 2-degree warm network are shown. */
   visibleIds: Set<string>;
+  /** The clean branching tree: [me→1st] and [1st→its 2nd-degree children]. No stray cross-links. */
+  treeEdges: Array<[string, string]>;
 }
 
 /**
@@ -85,12 +89,14 @@ function computeLayout(graph: Graph): LayoutResult {
 
   const n1 = firstDegree.length || 1;
   const wedge = (Math.PI * 2) / n1;
+  const treeEdges: Array<[string, string]> = [];
 
   firstDegree.forEach((fd, i) => {
     const angle = -Math.PI / 2 + (i / n1) * Math.PI * 2; // start at top
     positions.set(fd, { x: Math.cos(angle) * R1, y: Math.sin(angle) * R1 });
     degreeOf.set(fd, 1);
     visibleIds.add(fd);
+    treeEdges.push([me, fd]); // you → 1st-degree
 
     const kids = childrenOf.get(fd)!;
     const span = wedge * 0.72; // fan width, leaves a margin between branches
@@ -101,14 +107,15 @@ function computeLayout(graph: Graph): LayoutResult {
       positions.set(kid, { x: Math.cos(a) * r, y: Math.sin(a) * r });
       degreeOf.set(kid, 2);
       visibleIds.add(kid);
+      treeEdges.push([fd, kid]); // 1st-degree → its 2nd-degree branch
     });
   });
 
-  return { positions, degreeOf, visibleIds };
+  return { positions, degreeOf, visibleIds, treeEdges };
 }
 
 export function NetworkGraph({ graph, selected }: NetworkGraphProps) {
-  const { positions, degreeOf, visibleIds } = useMemo(
+  const { positions, degreeOf, visibleIds, treeEdges } = useMemo(
     () => computeLayout(graph),
     [graph]
   );
@@ -138,10 +145,16 @@ export function NetworkGraph({ graph, selected }: NetworkGraphProps) {
           : onPath
             ? "active"
             : "dim";
+        const isMe = p.id === graph.me;
+        const degree = degreeOf.get(p.id) ?? 2;
+        const d = nodeDiameter(isMe, degree);
+        const c = positions.get(p.id) ?? { x: 0, y: 0 };
         return {
           id: p.id,
           type: "persona",
-          position: positions.get(p.id) ?? { x: 0, y: 0 },
+          // offset by half the circle so the disc CENTER lands on the layout
+          // coordinate — floating edges then connect true center-to-center.
+          position: { x: c.x - d / 2, y: c.y - d / 2 },
           data: {
             name: p.name,
             headline: p.headline,
@@ -159,30 +172,29 @@ export function NetworkGraph({ graph, selected }: NetworkGraphProps) {
   }, [graph, positions, selected, hasSelection]);
 
   const edges: RFEdge[] = useMemo(() => {
-    return graph.edges
-      .filter((e) => visibleIds.has(e.source) && visibleIds.has(e.target))
-      .map((e) => {
-        const key = edgeKey(e.source, e.target);
-        const onPath = pathEdgeKeys.has(key);
-        return {
-          id: key,
-          source: e.source,
-          target: e.target,
-          type: "straight",
-          className: onPath ? "warm-edge" : undefined,
-          animated: false,
-          style: onPath
-            ? { strokeWidth: 3.5 }
-            : {
-                stroke: "#cbd5e1",
-                strokeWidth: 1.2,
-                strokeOpacity: hasSelection ? 0.15 : 0.5,
-              },
-          zIndex: onPath ? 10 : 0,
-        };
-      });
+    // Only the clean branching tree (you→1st, 1st→2nd) — no stray cross-links.
+    return treeEdges.map(([source, target]) => {
+      const key = edgeKey(source, target);
+      const onPath = pathEdgeKeys.has(key);
+      return {
+        id: key,
+        source,
+        target,
+        type: "floating",
+        className: onPath ? "warm-edge" : undefined,
+        animated: false,
+        style: onPath
+          ? { strokeWidth: 3.5 }
+          : {
+              stroke: "#cbd5e1",
+              strokeWidth: 1.2,
+              strokeOpacity: hasSelection ? 0.15 : 0.5,
+            },
+        zIndex: onPath ? 10 : 0,
+      };
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph, selected, hasSelection]);
+  }, [treeEdges, selected, hasSelection]);
 
   return (
     <div className="relative h-full w-full">
@@ -200,6 +212,7 @@ export function NetworkGraph({ graph, selected }: NetworkGraphProps) {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.3}
