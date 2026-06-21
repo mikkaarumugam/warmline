@@ -107,6 +107,12 @@ export function ResultCard({
             )}
           >
             <div className="overflow-hidden">
+              {persona.ask && (
+                <p className="mb-2.5 text-[12px] leading-snug text-slate-400">
+                  <span className="font-semibold text-amber-200/90">Their ask: </span>
+                  {persona.ask}
+                </p>
+              )}
               <span
                 role="button"
                 tabIndex={0}
