@@ -19,17 +19,25 @@ current, and **consent-first** from day one. We never scrape.
 
 ## Screenshots
 
-**Network ego-graph — idle state**
+**Onboarding — declare your offer & ask, grow the graph by invites (never scraped)**
 
-![Warmline network ego-graph](public/screenshots/g_idle.png)
+![Onboarding screen](public/screenshots/01-onboarding.png)
 
-**Warm path highlighted — Samuel Okoro via Priya Nair**
+**Golden path — "a technical cofounder who knows payments infrastructure" → Samuel Okoro #1, warm path You → Priya → Samuel**
 
-![Warm path highlighted after match](public/screenshots/g_selected.png)
+![Ranked matches with the warm path highlighted](public/screenshots/02-golden-path.png)
 
-**Onboarding — declare your offer & ask, grow by invites**
+**Two-sided & declared — the expanded card shows the target's offer *and* their declared ask, so the mutual fit is visible**
 
-![Onboarding screen](public/screenshots/01_onboarding.png)
+![Result card showing offer and ask](public/screenshots/03-two-sided-card.png)
+
+**The vouch + the handoff — Priya vouches to back you (signal, not a gate), Samuel accepts, you book a call (zero PII)**
+
+![Vouch and book-a-call handoff](public/screenshots/04-vouch-book.png)
+
+**The graph grows — an accepted intro becomes a real, consented connection in your 1st-degree ring**
+
+![Connection grows in the network graph](public/screenshots/05-connection-grows.png)
 
 ---
 
