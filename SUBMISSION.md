@@ -8,16 +8,20 @@
 > This is the source of truth for what we must deliver to submit. Keep the status boxes current.
 
 ## Final submission — 4 required links
-| # | Field | What it is | Our plan | Status |
-|---|-------|-----------|----------|--------|
-| 1 | **Link to Code** | Public GitHub repo | Push this repo public (README ✅ done) | ☐ repo not pushed yet |
-| 2 | **Link to Presentation** | Deck (Google Slides / Canva / DocSend) | ✅ `pitch/Warmline-deck.pdf` built — just needs hosting/link | ✅ deck ready |
-| 3 | **Link to Demo Video** | Video (YouTube/Loom) of the demo | Record golden-path walkthrough after deploy + flow freeze | ☐ not recorded |
-| 4 | **Live Demo Link** | Deployed app (Vercel/Netlify) | `npx vercel` deploy → prod URL | ☐ needs Vercel login |
+| # | Field | What it is | Link / artifact | Status |
+|---|-------|-----------|----------------|--------|
+| 1 | **Link to Code** | Public GitHub repo | https://github.com/mikkaarumugam/warmline | ✅ **public & in sync** |
+| 2 | **Link to Presentation** | Deck | `pitch/Warmline-deck.pdf` (9 slides, business slides added) | ✅ built — host as a link (see below) |
+| 3 | **Link to Demo Video** | Video (YouTube/Loom) | Golden-path walkthrough on the live URL | ☐ **record (only thing left)** |
+| 4 | **Live Demo Link** | Deployed app | https://warmline-nu.vercel.app | ✅ **live & verified** (golden path holds in-browser, 0 errors) |
+
+> **Presentation link options:** upload `pitch/Warmline-deck.pdf` to Google Slides/Drive
+> (share-link), DocSend, or just link the PDF in the public repo. No re-design needed.
 
 ## Checkpoint 1 submission (separate form)
-- ☐ **Submission Details** (required): written explanation — what we built, the process (spine-first + 3 parallel agent tracks), the two-sided/declared wedge, the tech (local embeddings, warm-path BFS, Claude intros).
-- ☐ **Submission Files** (required, ≤25 MB): e.g. screenshots of the app + the deck PDF.
+- ✅ **Submission Details** (required): written, paste-ready → `pitch/submission-details.md`.
+- ✅ **Submission Files** (required, ≤25 MB): `pitch/submission-screenshots/` (6 PNGs, ~1.9 MB)
+  + `pitch/Warmline-deck.pdf` (~96 KB). Total ~2 MB.
 
 ## What's DONE (the product itself)
 - ✅ Working app: onboarding → semantic match → animated warm-path ego-graph → Claude/template intro.
@@ -25,9 +29,14 @@
 - ✅ Build green; runs locally at `http://localhost:3000`.
 
 ## Blockers to close (need from the user)
-- ☐ **Name** confirmed (threads into UI header + onboarding + deck).
-- ☐ **Vercel login** (`npx vercel login`) → unblocks Live Demo Link.
-- ☐ **Anthropic API key** → turns "Draft intro" from template to live Claude (optional but stronger demo).
+- ✅ **Name** — "Warmline" (used throughout app + deck; treat as confirmed).
+- ✅ **Live Demo Link** — already deployed at https://warmline-nu.vercel.app (no Vercel
+  login needed; redeploys on push to `origin/main`).
+- ☐ **Record the demo video** — the one real remaining task. Pre-warm the match model
+  (run one match first — there's a one-time WASM model load) before recording.
+- ☐ **Host the deck** as a shareable link (PDF is ready in `pitch/`).
+- ☐ *(optional)* **Anthropic API key** in `.env.local` → live Claude intros instead of the
+  template. The template is coherent; this is a nice-to-have, not required.
 
 ## Owner map (so parallel sessions don't collide)
 - **This session:** `components/graph/*`, `app/page.tsx` (name/header), Vercel deploy, wiring key + name.

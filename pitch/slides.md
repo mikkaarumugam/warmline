@@ -94,18 +94,23 @@ style: |
     width: 100%;
     border-collapse: collapse;
     font-size: 1rem;
+    background: transparent !important;
   }
   th {
-    background: #1e1b4b;
+    background: #1e1b4b !important;
     color: #c4b5fd;
     padding: 10px 16px;
     text-align: left;
     font-weight: 700;
   }
+  tr {
+    background: transparent !important;
+  }
   td {
     padding: 10px 16px;
-    border-bottom: 1px solid #27272a;
-    color: #d4d4d8;
+    border-bottom: 1px solid #3f3f46;
+    color: #e4e4e7 !important;
+    background: transparent !important;
   }
 ---
 
@@ -198,7 +203,7 @@ The warm path + drafted intro removes all the friction that kills even good refe
 1. Ranked warm matches → **Samuel Okoro**, ex-Adyen, **#1**
 2. Zero shared keywords with *"billing and ledger systems at Adyen"* — **semantic**
 3. Graph animates: **You → Priya Nair → Samuel**
-4. One click → **Claude drafts the intro in Priya's voice**, double-opt-in
+4. One click → **Claude drafts your intro to Samuel** — Priya **vouches** to back it (signal, never a gate); accept → **book a call**
 
 <br>
 
@@ -209,34 +214,80 @@ Drive the live product here — this is the money slide.
 Points to land:
   1. Semantic matching (no keyword trick)
   2. The warm path visualization — you see the route, not just a name
-  3. The drafted intro removes all friction for the mutual
-  4. Fallback: if no API key, a clean templated draft fires — demo never hard-fails.
+  3. The vouch is SIGNAL, not a gate: the mutual taps a 1-10 confidence to boost
+     the request, but can never block it — that's what keeps the marketplace liquid.
+  4. Double opt-in: the request reaches Samuel because he declared he's open; accept
+     hands off to a zero-PII "book a call." We own the intro, not the chat.
+  5. Fallback: if no API key, a clean templated draft fires — demo never hard-fails.
 -->
 
 ---
 
-## GTM & onboarding — where the graph comes from
+## GTM — the graph grows consented
 
-**Step 1:** Import LinkedIn connections to map **who knows whom** (edges only).
+- **Sign in with LinkedIn** = identity, **not** your connections.
+- **Invite people you know** → they declare → a **consented edge** forms.
+- Their invites then grow your 2nd degree.
+- **Cold start: community-first** — seed one dense pocket.
 
-**Step 2:** Each user declares their **offer** and **ask** — always explicit, never inferred.
-
-<br>
-
-**Who pays:**
-
-- Recruiters filling senior roles
-- Founders raising or hiring
-- Sales and BD teams who live by warm intros
-
-<br>
-
-**Why it compounds:** every new declaration makes every existing match denser.
+> Every edge is real and opted-in. **We never scrape** — that's the moat.
 
 <!-- Speaker notes:
-Address the cold-start question head-on — we seed the graph topology from existing connections, but intent is always declared.
-The business model is straightforward: high-value use cases, recurring need, clear willingness to pay.
-Network effect is real: a declared graph is a compounding asset.
+Pre-empt the LinkedIn objection: LinkedIn OAuth returns identity, never the connection graph
+— and importing the CSV is a trap (it gives you ghosts who never opted in and breaks our
+"consented, declared" promise). So we grow by invites: every edge is a real, two-sided,
+consented relationship. Cold start is the Facebook/LinkedIn "one campus at a time" playbook —
+seed a dense community and warm paths exist immediately. The vouch inbox is itself a growth hook.
+-->
+
+---
+
+## Business model — who pays, and why
+
+**Target customer:** **founders, B2B sales/BD, recruiters** — people whose job *is* warm intros.
+
+| Tier | Who | Price |
+|---|---|---|
+| **Free** | Declare, receive, capped sends | $0 — *acquisition* |
+| **Pro** | Unlimited asks, priority ranking, analytics | **$49 / seat / mo** |
+| **Community** | Accelerators, VC funds, alumni networks license it | **from $12k / yr** |
+
+**+ Success fee** on **booked** hire intros — a fraction of a 15–25% agency fee.
+
+<!-- Speaker notes:
+Land bottoms-up (free → Pro seats), expand to orgs. Pricing is anchored, not arbitrary:
+- **Pro $49/seat** sits BELOW LinkedIn Sales Navigator ($99/mo) — and we're warm + consented
+  vs their cold + inferred, so one landed intro (a hire, a customer, an investor) pays for a
+  year many times over.
+- **Community from ~$12k/yr** (scales with cohort size) productizes the warm-intro promise
+  accelerators and VCs ALREADY make to members by hand — and a fund pays far more for Affinity
+  today. This is the real business: recurring, sticky (the consented graph is the moat), grows
+  with the community.
+- **Success fee** on booked hire-intros is a fraction of a 15–25% recruiting-agency fee — and
+  we can meter it because we own the booking.
+Full comparables + WTP logic in pitch/pricing.md. The metric we'd optimize → next slide.
+-->
+
+---
+
+## The vouch lift — our core bet
+
+- A request **with a vouch** converts far better than **without**.
+- In the demo: **78%** with a vouch vs **41%** without — a **~1.9× lift**.
+- The **vouch is signal, not a gate** — low-effort, so it gets done.
+- **It compounds:** each accepted intro **grows the consented graph**.
+
+> A network effect that competitors who *infer* can't copy.
+
+<!-- Speaker notes:
+HONESTY NOTE: 78% / 41% are SEEDED, illustrative demo numbers (data/seed/stats.ts) — we have
+no real users yet. Do NOT present them as measured evidence. Frame them as our north-star
+metric / core bet: this vouch-lift is THE number we'd instrument from day one, and the whole
+product is designed to maximize it. The live funnel (requested → accepted → booked) and this
+stat render in the app's Sent tab as a working demo of how we'd track it.
+If a judge asks "where's that from?": "Illustrative from our demo data — we're pre-launch.
+But it's our north-star, and the product exists to move it." Then tie back: declared +
+consented + vouched = a compounding, defensible marketplace.
 -->
 
 ---
